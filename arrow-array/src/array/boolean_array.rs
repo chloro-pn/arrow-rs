@@ -349,6 +349,12 @@ impl From<Vec<Option<bool>>> for BooleanArray {
     }
 }
 
+impl From<&[u8]> for BooleanArray {
+    fn from(value: &[u8]) -> Self {
+        Self::from(BooleanBuffer::from(value))
+    }
+}
+
 impl From<ArrayData> for BooleanArray {
     fn from(data: ArrayData) -> Self {
         assert_eq!(
@@ -506,6 +512,26 @@ mod tests {
                 assert!(arr.is_valid(i));
                 assert_eq!(i == 1 || i == 3, arr.value(i), "failed at {i}")
             }
+        }
+    }
+
+    #[test]
+    fn test_boolean_array_from_slice_u8() {
+        let v: Vec<u8> = vec![1, 2, 3];
+        let slice = &v[..];
+        let arr = BooleanArray::from(slice);
+        assert_eq!(24, arr.len());
+        assert_eq!(0, arr.offset());
+        assert_eq!(0, arr.null_count());
+        assert!(arr.nulls().is_none());
+        for i in 0..24 {
+            assert!(!arr.is_null(i));
+            assert!(arr.is_valid(i));
+            assert_eq!(
+                i == 0 || i == 9 || i == 16 || i == 17,
+                arr.value(i),
+                "failed t {i}"
+            )
         }
     }
 
